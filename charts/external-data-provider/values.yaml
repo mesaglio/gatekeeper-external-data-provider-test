@@ -1,5 +1,5 @@
 certDir: /certs
-clientCAFile: /tmp/gatekeeper/ca.crt
+clientCAFile: ""
 port: 8090
 provider:
   timeout: 1

@@ -11,14 +11,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/open-policy-agent/gatekeeper-external-data-provider/pkg/handler"
-	"github.com/open-policy-agent/gatekeeper-external-data-provider/pkg/utils"
-
-	"k8s.io/klog/v2"
+	"mesaglio/gatekeeper-external-data-provider-test/pkg/handler"
+	"mesaglio/gatekeeper-external-data-provider-test/pkg/utils"
 )
 
 const (
-	timeout     = 1 * time.Second
+	timeout     = 5 * time.Second
 	defaultPort = 8090
 
 	certName = "tls.crt"
@@ -32,7 +30,6 @@ var (
 )
 
 func init() {
-	klog.InitFlags(nil)
 	flag.StringVar(&certDir, "cert-dir", "", "path to directory containing TLS certificates")
 	flag.StringVar(&clientCAFile, "client-ca-file", "", "path to client CA certificate")
 	flag.IntVar(&port, "port", defaultPort, "Port for the server to listen on")
@@ -53,10 +50,10 @@ func main() {
 		MinVersion: tls.VersionTLS13,
 	}
 	if clientCAFile != "" {
-		klog.InfoS("loading Gatekeeper's CA certificate", "clientCAFile", clientCAFile)
+		fmt.Printf("loading Gatekeeper's CA certificate: %s\n", clientCAFile)
 		caCert, err := os.ReadFile(clientCAFile)
 		if err != nil {
-			klog.ErrorS(err, "unable to load Gatekeeper's CA certificate", "clientCAFile", clientCAFile)
+			fmt.Printf("ERROR: unable to load Gatekeeper's CA certificate: %s\nError: %s\n", clientCAFile, err.Error())
 			os.Exit(1)
 		}
 
@@ -72,13 +69,13 @@ func main() {
 		certFile := filepath.Join(certDir, certName)
 		keyFile := filepath.Join(certDir, keyName)
 
-		klog.InfoS("starting external data provider server", "port", port, "certFile", certFile, "keyFile", keyFile)
+		fmt.Printf("starting external data provider server on port: %d, certFile: %s, keyFile: %s\n", port, certFile, keyFile)
 		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
-			klog.ErrorS(err, "unable to start external data provider server")
+			fmt.Printf("unable to start external data provider server: %s\n", err.Error())
 			os.Exit(1)
 		}
 	} else {
-		klog.Error("TLS certificates are not provided, the server will not be started")
+		fmt.Println("TLS certificates are not provided, the server will not be started")
 		os.Exit(1)
 	}
 }

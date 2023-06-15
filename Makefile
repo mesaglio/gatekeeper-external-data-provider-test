@@ -28,10 +28,19 @@ docker-buildx-builder:
 		docker buildx create --name container-builder --use;\
 	fi
 
+.PHONY: docker-docker-build-builder
+docker-docker-build-builder:
+	docker build -t container-builder .
+
 .PHONY: docker-buildx
 docker-buildx: docker-buildx-builder
 	docker buildx build --load -t ${IMG} .
 
+.PHONY: docker-build
+docker-build:
+	docker build --no-cache -t ${IMG} .
+
+
 .PHONY: kind-load-image
 kind-load-image:
-	kind load docker-image ${IMG} --name gatekeeper
+	kind load docker-image ${IMG}

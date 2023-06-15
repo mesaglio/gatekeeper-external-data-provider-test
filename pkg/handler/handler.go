@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"strings"
 
+	"mesaglio/gatekeeper-external-data-provider-test/pkg/utils"
+	"mesaglio/gatekeeper-external-data-provider-test/pkg/validators/cosign"
+	"mesaglio/gatekeeper-external-data-provider-test/pkg/validators/naming"
+
 	"github.com/open-policy-agent/frameworks/constraint/pkg/externaldata"
-	"github.com/open-policy-agent/gatekeeper-external-data-provider/pkg/utils"
-	"k8s.io/klog/v2"
 )
 
 func Handler(w http.ResponseWriter, req *http.Request) {
@@ -26,7 +28,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	klog.InfoS("received request", "body", requestBody)
+	fmt.Printf("received request body: %s\n", string(requestBody[:]))
 
 	// parse request body
 	var providerRequest externaldata.ProviderRequest
@@ -37,6 +39,13 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	results := make([]externaldata.Item, 0)
+	nv := naming.NamingValidator{}
+	cv, err := cosign.New("")
+	if err != nil {
+		fmt.Printf("ERROR: cant initialize cosgin service: %s", err.Error())
+		utils.SendResponse(nil, fmt.Sprintf("initialize cosgin service: %s", err.Error()), w)
+		return
+	}
 	// iterate over all keys
 	for _, key := range providerRequest.Request.Keys {
 		// Providers should add a caching mechanism to avoid extra calls to external data sources.
@@ -48,19 +57,9 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		// check if key contains "error_" to trigger an error
-		if strings.HasPrefix(key, "error_") {
-			results = append(results, externaldata.Item{
-				Key:   key,
-				Error: key + "_invalid",
-			})
-		} else if !strings.HasSuffix(key, "_valid") {
-			// valid key will have "_valid" appended as return value
-			results = append(results, externaldata.Item{
-				Key:   key,
-				Value: key + "_valid",
-			})
-		}
+		results = nv.ValidKey(key, results)
+		results = cv.ValidKey(key, results)
+
 	}
 	utils.SendResponse(&results, "", w)
 }

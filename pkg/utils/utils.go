@@ -2,11 +2,11 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/open-policy-agent/frameworks/constraint/pkg/externaldata"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -30,11 +30,12 @@ func SendResponse(results *[]externaldata.Item, systemErr string, w http.Respons
 		response.Response.SystemError = systemErr
 	}
 
-	klog.InfoS("sending response", "response", response)
+	fmt.Printf("sending response response: %v\n", response)
 
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		klog.ErrorS(err, "unable to encode response")
+		fmt.Printf("unable to encode response, error: %s\n", err.Error())
+
 		os.Exit(1)
 	}
 }
