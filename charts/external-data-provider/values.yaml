@@ -1,7 +1,8 @@
 certDir: /certs
 clientCAFile: ""
 port: 8090
+# cosignValidationBlocker: false
 provider:
-  timeout: 1
+  timeout: 5
   tls:
     caBundle: ""

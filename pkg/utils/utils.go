@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/open-policy-agent/frameworks/constraint/pkg/externaldata"
 )
@@ -31,11 +32,16 @@ func SendResponse(results *[]externaldata.Item, systemErr string, w http.Respons
 	}
 
 	fmt.Printf("sending response response: %v\n", response)
-
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		fmt.Printf("unable to encode response, error: %s\n", err.Error())
 
 		os.Exit(1)
 	}
+}
+
+// Return containerName, containerImage
+func GetContainerNameAndImageFromKey(externalProviderKey string) (string, string) {
+	splited := strings.Split(externalProviderKey, "|")
+	return splited[0], splited[1]
 }

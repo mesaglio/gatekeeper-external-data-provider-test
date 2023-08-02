@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	timeout     = 5 * time.Second
+	timeout     = 30 * time.Second
 	defaultPort = 8090
 
 	certName = "tls.crt"
@@ -27,9 +27,11 @@ var (
 	certDir      string
 	clientCAFile string
 	port         int
+	// cosignValidationBlocker bool
 )
 
 func init() {
+	// flag.BoolVar(&cosignValidationBlocker, "cosignValidationBlocker", false, "block deployment if images are not sign")
 	flag.StringVar(&certDir, "cert-dir", "", "path to directory containing TLS certificates")
 	flag.StringVar(&clientCAFile, "client-ca-file", "", "path to client CA certificate")
 	flag.IntVar(&port, "port", defaultPort, "Port for the server to listen on")
@@ -43,7 +45,7 @@ func main() {
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", port),
 		Handler:           mux,
-		ReadHeaderTimeout: time.Duration(5) * time.Second,
+		ReadHeaderTimeout: time.Duration(30) * time.Second,
 	}
 
 	config := &tls.Config{

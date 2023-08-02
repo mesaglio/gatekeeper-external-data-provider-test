@@ -14,10 +14,10 @@ spec:
 
         violation[{"msg": msg}] {
           # una por request
-          # name_image := sprintf("%s|%s", [input.review.object.spec.containers[i].image, input.review.object.spec.containers[i].name])
+          # name_image := sprintf("%s|%s", [input.review.object.spec.containers[i].name, input.review.object.spec.containers[i].image])
 
-          #todo en una
-          name_image := [img_name | img = input.review.object.spec.containers[i].image; name = input.review.object.spec.containers[i].name; img_name = sprintf("%s|%s", [img, name])]  
+          # todo en una
+          name_image := [img_name | img = input.review.object.spec.containers[i].image; name = input.review.object.spec.containers[i].name; img_name = sprintf("%s|%s", [name, img])]  
 
           # send external data request
           response := external_data({"provider": "external-data-provider", "keys": name_image})

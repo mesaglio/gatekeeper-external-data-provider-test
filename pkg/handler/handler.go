@@ -9,7 +9,6 @@ import (
 
 	"mesaglio/gatekeeper-external-data-provider-test/pkg/utils"
 	"mesaglio/gatekeeper-external-data-provider-test/pkg/validators/cosign"
-	"mesaglio/gatekeeper-external-data-provider-test/pkg/validators/naming"
 
 	"github.com/open-policy-agent/frameworks/constraint/pkg/externaldata"
 )
@@ -39,7 +38,8 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	results := make([]externaldata.Item, 0)
-	nv := naming.NamingValidator{}
+	// nv := naming.NamingValidator{}
+	// nv2 := naming_v2.NamingValidatorV2{}
 	cv, err := cosign.New("")
 	if err != nil {
 		fmt.Printf("ERROR: cant initialize cosgin service: %s", err.Error())
@@ -48,6 +48,9 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	}
 	// iterate over all keys
 	for _, key := range providerRequest.Request.Keys {
+		containerName, containerImage := utils.GetContainerNameAndImageFromKey(key)
+
+		fmt.Printf("Analysing %s - %s\n", containerName, containerImage)
 		// Providers should add a caching mechanism to avoid extra calls to external data sources.
 
 		// following checks are for testing purposes only
@@ -57,8 +60,11 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		results = nv.ValidKey(key, results)
-		results = cv.ValidKey(key, results)
+		// results = nv.ValidKey(containerImage, results)
+		// results = nv2.ValidKey(key, results)
+		if strings.HasPrefix(containerName, "application-") {
+			results = cv.ValidKey(containerImage, results)
+		}
 
 	}
 	utils.SendResponse(&results, "", w)
